@@ -43,32 +43,27 @@ void TestSRP(){
 
 void TestDoubleVDP(const std::vector<double>& dx){
     std::cout << "RK Vanderpol Integration:\n";
-    {
-        VDP vdp(1.0);
-        double tf = 12;
-               
-        {
-        double t = 0.0;
-        std::vector<double> x = {3.0+dx[0],5.0+dx[1]};        
-                
-        std::cout << "\nT         x1         x2" << std::endl;
-        std::cout << t << "        " << x[0] << "       " << x[1] << std::endl;
-        double h = .1;
-        while (t < tf) {
-        
-            if (t + h >= tf){
-                x = RK4::step(vdp, t, x, tf-t);
-                break;}
-            else
-                x = DOPRI45::step(vdp, t, x, h);
+    VDP vdp(1.0);
+    double tf = 12;
+           
+    double t = 0.0;
+    std::vector<double> x = {3.0+dx[0],5.0+dx[1]};        
             
-            std::cout << t << "       " << x[0] << "       " << x[1] << "\n"; //Print all integration steps
-        }
-        std::cout << t << "       " << x[0] << "       " << x[1] << "\n";       // Print final state
+    printState({"x1","x2"});
+    printState(t,x);
+    double h = .1;
+    while (t < tf) {
+    
+        if (t + h >= tf){
+            x = RK4::step(vdp, t, x, tf-t);
+            printState(t,x);       // Print final state
 
-        }
+            break;}
+        else
+            x = DOPRI45::step(vdp, t, x, h);
+        
+        printState(t,x); //Print all integration steps
     }
-
     return;
 }
 
@@ -83,7 +78,7 @@ void TestDAVDP(const std::vector<double>& dx){
     std::vector<DA> x;
     x.push_back(x1);
     x.push_back(x2);
-    std::cout << "\nDA representation of VDP:\n";
+    std::cout << "\nOrder " << DA::getMaxOrder() << " DA representation of VDP:\n";
     double t = 0.0;
     double h = 0.01;
     for (auto idx = 0; idx < 1200; ++idx) {
