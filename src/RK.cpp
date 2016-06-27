@@ -1,5 +1,5 @@
 #include "RK.hpp"
-#include<iostream> // debugging
+// #include<iostream> // debugging
 #include<cmath> // min, max, pow
 
 std::vector<double> RK4::step(const DynamicSystem<double>& sys, double& time, const std::vector<double>& state, const double& h) {
@@ -59,7 +59,7 @@ std::vector<double> DOPRI45::step(const DynamicSystem<double>& sys, double& time
     // Butcher tableaus for:
    
    // Prince-Dormand 4/5
-    const int s = 7;
+    const int s = 7; //number of stages
     const int order = 5;
     const double c[s] = {0.0, 0.2, 0.3, 0.8, 8.0/9.0, 1.0, 1.0};
     const double a[s][s] = {{0},
@@ -141,9 +141,8 @@ std::vector<double> DOPRI45::step(const DynamicSystem<double>& sys, double& time
         }    
         
         // Stepsize Adaptation
-        // if (false) {
         if (!constStep) {
-            errNorm = VectorNorm(err)/tol;                                      // norm could be replaced with max
+            errNorm = VectorNorm(err)/tol;                                  // norm could be replaced with max
             if (errNorm <= 1.0){
                 if (errNorm == 0.0){
                     scale = maxScale;            

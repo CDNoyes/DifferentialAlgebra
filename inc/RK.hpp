@@ -12,7 +12,6 @@ Included integrators:
 A classical 4th order
 Prince Dormand 4(5) with adaptive stepsize
 
-
 */
 
 

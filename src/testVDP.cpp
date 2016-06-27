@@ -1,19 +1,17 @@
-#include<iostream>
-#include<iomanip>
 
-// #include "VectorOperations.hpp"
+#include "Utils.hpp"
 #include "VDP.hpp"
 #include "RK.hpp"
-#include "Controller.hpp"
-#include "SRP.hpp"
 #include "Print.hpp"
+
 #include "spline.h"
-// #include "DA\dace.h"
-// using namespace DACE;
+
+#include <DA\dace.h>
+using namespace DACE;
 
 
 
-void TestSRP(){
+/* void TestSRP(){
 
     SRP<double> srp = SRP<double>();
     double tf = 18.1;
@@ -39,16 +37,19 @@ void TestSRP(){
     }
     printState(t,x);
 
-};
+}; */
 
 void TestDoubleVDP(const std::vector<double>& dx){
     std::cout << "RK Vanderpol Integration:\n";
-    VDP vdp(1.0);
+    VDP vdp(1.0+dx[2]);
+
     double tf = 12;
            
     double t = 0.0;
-    std::vector<double> x = {3.0+dx[0],5.0+dx[1]};        
-            
+    std::vector<double> x = {3.0+dx[0],5.0+dx[1]};      
+
+    // VDP vdp(1.0+dx[2]);
+        
     printState({"x1","x2"});
     printState(t,x);
     double h = .1;
@@ -67,33 +68,47 @@ void TestDoubleVDP(const std::vector<double>& dx){
     return;
 }
 
-void TestDAVDP(const std::vector<double>& dx){
-    DA::init(2,2);
-    DA mu = DA(1.0);
-    DA x1 = 3+DA(1);
-    DA x2 = 5+DA(2);
-
+compiledDA TestDAVDP(const int& order=2, const std::vector<double>& dx={0.0,0.0,0.0}){
+    DA::init(order,2);
+    
+    
+    DA mu = DA(1)+0.5;
+    DA x1 = DA(3.0);
+    DA x2 = DA(5.0);
     VDPDA vdp(mu);
     
-    std::vector<DA> x;
+
+    
+    AlgebraicVector<DA> x;
     x.push_back(x1);
     x.push_back(x2);
-    std::cout << "\nOrder " << DA::getMaxOrder() << " DA representation of VDP:\n";
+    
+    std::cout << vdp.mu() << "\n";
+    std::cout << vdp.trace(x,x) << "\n";
+    
+    std::cout << "\nComputing order " << DA::getMaxOrder() << " DA representation of VDP:\n";
     double t = 0.0;
     double h = 0.01;
-    for (auto idx = 0; idx < 1200; ++idx) {
+    // printState({"x1","x2"});
+    // printState(t, x);
+    
+    for (auto idx = 0; idx < 500; ++idx) {
         x = RK4::step(vdp, t, x, h);
-        // std::cout << t << "\n" << x[0] << "\n" << x[1] << "\n";
     }
-    printState({"x1","x2"});
-    printState(t, x);
-    printState({"x1(dx)","x2(dx)"});
-    printState(t, x, dx);
-    // std::cout << t << "       " << x[0].eval(dx) << "       " << x[1].eval(dx) << "\n";
-    // std::cout << t << "       " << x[0].cons() << "       " << x[1].cons() << "\n";
+    
+    
+    std::vector<double> rad;
+    compiledDA xc = x.compile();
 
+    // printState({"r_x1","r_x2"});
+    for (auto& da : x)
+        rad.push_back(da.convRadius(1e-3,2));
+    // printState(t, rad);
+    // printState(t,xc.eval(dx));
+    // printState({"x1(dx)","x2(dx)"});
+    // printState(t, x, dx);
 
-    return;
+    return xc;
 }
 
 void TestSpline(){
@@ -161,35 +176,42 @@ std::cout << VectorNorm(x) << "\n";
 
 }
 
-void TestController(const std::vector<double>& x){
-    ConstControl<double> u(1,3.0);
 
-    std::cout << u() << std::endl; //Print out the previous control. For constControls, its the constant values. For all others, the value is intialized as 0
+void TestLambdaControl(){
+
+    auto u = [](const double& t){ return -9/(1+t);};
     
-    std::vector<double> ux = u(x);
-    std::cout << ux.size() << std::endl;
-    
-    std::vector<double> t = {0,1,2,3,4,5};
-    std::vector<double> y = {0,1,4,9,16,25};
-    
-    InterpControl<double> ui(1,t,y);
-    
-    std::cout << ui(0.5) << "\n";
-    std::cout << ui(t)[4] << "\n";
+    std::cout << u(2) << " == -3\n";
+
 }
 
 int main()
 {
-    std::cout << "\n~~~Vanderpol Oscillator test program~~~\n";
-    std::vector<double> dx = {0.01, -0.03};
-    TestDoubleVDP(dx);
-    TestDAVDP(dx);
+    std::ofstream outputFile;
+    outputFile.open("res/temp.txt");
+    outputFile.close();
+    
+    // std::cout << "\n~~~Vanderpol Oscillator test program~~~\n";
+    // std::vector<double> dx = {0.0,0.0,0.0};
+    std::vector<double> dx = {0.0};
+    // TestDoubleVDP(dx);
+    compiledDA xf = TestDAVDP(4,dx);
+    
+    // std::vector<double> mus = logspace(-2,0,100);
+    std::vector<double> mus = linspace(0.29,0.71,50);
+    // printState({"mu"},{"x1","x2"});
+    for (auto&& mu : mus){
+        dx[0] = mu-0.5;
+        // printState(mu, xf.eval(dx));
+        writeState(mu, xf.eval(dx));
+    }
     // TestSpline();
     // TestTableau();
     // TestRef();
     // TestNorm();
     // TestController(dx);
     // TestSRP();
+    // TestLambdaControl();
     return 0;
 }
 

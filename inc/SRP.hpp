@@ -13,5 +13,5 @@ class SRP : public DynamicSystem<T> {
         
     public:
         SRP();
-        virtual std::vector<T> operator()(const double&, const std::vector<T>&) const;     
+        virtual std::vector<T> operator()(const double&, const std::vector<T>&, const std::function<T(const double&, const std::vector<T>&)>& control) const;     
 };

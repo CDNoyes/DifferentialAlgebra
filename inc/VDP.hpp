@@ -13,7 +13,7 @@ class VDP : public DynamicSystem<double> {
         
     public:
         VDP(double mu);
-        // using DynamicSystem::operator();
+        // virtual std::vector<double> operator()(const double&, const std::vector<double>&, const std::function<double(const double&, const std::vector<double>&)>& control) const;     
         virtual std::vector<double> operator()(const double&, const std::vector<double>&) const;     
 };
 
@@ -24,7 +24,7 @@ class VDPDA : public DynamicSystem<DA> {
         
     public:
         VDPDA(DA mu);
-        // using DynamicSystem::operator();
+        // virtual std::vector<DA> operator()(const double&, const std::vector<DA>&, const std::function<DA(const double&, const std::vector<DA>&)>& control) const;     
         virtual std::vector<DA> operator()(const double&, const std::vector<DA>&) const;     
-
+        inline DA mu() const {return this->MU;} ;
 };

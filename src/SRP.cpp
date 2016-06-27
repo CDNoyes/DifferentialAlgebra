@@ -9,7 +9,7 @@ SRP<T>::SRP() : DynamicSystem<T>(5) {
 
 };
 template<class T>
-std::vector<T> SRP<T>::operator()(const double& time, const std::vector<T>& state) const{
+std::vector<T> SRP<T>::operator()(const double& time, const std::vector<T>& state, const std::function<T(const double&, const std::vector<T>&)>& control) const{
 
 
     T mu = 170.0*3.14159/180.0; //Hard-coded, need to add Controller to DynamicSystem soon...
